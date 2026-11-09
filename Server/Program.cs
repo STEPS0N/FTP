@@ -1,4 +1,5 @@
 ﻿using Common;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -13,13 +14,26 @@ namespace Server
 {
     public class Program
     {
+        public static ApplicationContext _context;
         public static List<User> Users = new List<User>();
         public static IPAddress IpAddress;
         public static int Port;
 
         static void Main(string[] args)
         {
-            Users.Add(new User("klimov", "steps0n", @"\Авиатехникум"));
+            _context = new ApplicationContext();
+            //_context.Users.Add(new User("klimov", "steps0n", @"\Авиатехникум"));
+            //_context.SaveChanges();
+            try
+            {
+                Users = _context.Users.AsNoTracking().ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return;
+            }
+            //Users.Add(new User("klimov", "steps0n", @"\Авиатехникум"));
             Console.Write("Введите IP адрес сервера: ");
             string sIpAddress = Console.ReadLine();
             Console.Write("Введите порт: ");
@@ -38,7 +52,8 @@ namespace Server
         public static bool AutorizationUser(string login, string password)
         {
             User user = null;
-            user = Users.Find(x => x.login == login && x.password == password);
+            user = Users.FirstOrDefault(u => u.Login == login && u.Password == password);
+            
             return user != null;
         }
 
@@ -109,7 +124,13 @@ namespace Server
 
                             if (AutorizationUser(DataMessage[1], DataMessage[2]))
                             {
-                                int IdUser = Users.FindIndex(x => x.login == DataMessage[1] && x.password == DataMessage[2]);
+                                //int IdUser = Users.FindIndex(x => x.Login == DataMessage[1] && x.Password == DataMessage[2]);
+                                int IdUser = -1;
+                                var user1 = Users.FirstOrDefault(x => x.Login == DataMessage[1] && x.Password == DataMessage[2]);
+                                if (user1 != null)
+                                {
+                                    IdUser = user1.Id;
+                                }
                                 viewModelMessage = new ViewModelMessage("autorisation", IdUser.ToString());
                             }
                             else
@@ -131,8 +152,8 @@ namespace Server
 
                                 if (DataMessage.Length == 1)
                                 {
-                                    Users[ViewModelSend.Id].temp_src = Users[ViewModelSend.Id].src;
-                                    FoldersFiles = GetDirectory(Users[ViewModelSend.Id].src);
+                                    Users[ViewModelSend.Id].Temp_src = Users[ViewModelSend.Id].Src;
+                                    FoldersFiles = GetDirectory(Users[ViewModelSend.Id].Src);
                                 }
                                 else
                                 {
@@ -144,8 +165,8 @@ namespace Server
                                         else
                                             cdFolder += " " + DataMessage[i];
 
-                                    Users[ViewModelSend.Id].temp_src = Users[ViewModelSend.Id].temp_src + cdFolder;
-                                    FoldersFiles = GetDirectory(Users[ViewModelSend.Id].temp_src);
+                                    Users[ViewModelSend.Id].Temp_src = Users[ViewModelSend.Id].Temp_src + cdFolder;
+                                    FoldersFiles = GetDirectory(Users[ViewModelSend.Id].Temp_src);
                                 }
 
                                 if (FoldersFiles.Count == 0)
@@ -175,7 +196,7 @@ namespace Server
                                     else
                                         getFile += " " + DataMessage[i];
 
-                                byte[] byteFile = File.ReadAllBytes(Users[ViewModelSend.Id].temp_src + getFile);
+                                byte[] byteFile = File.ReadAllBytes(Users[ViewModelSend.Id].Temp_src + getFile);
                                 viewModelMessage = new ViewModelMessage("file", JsonConvert.SerializeObject(byteFile));
                             }
                             else
@@ -192,7 +213,7 @@ namespace Server
                             if (ViewModelSend.Id != -1)
                             {
                                 FileInfoFTP SendFileInfo = JsonConvert.DeserializeObject<FileInfoFTP>(ViewModelSend.Message);
-                                File.WriteAllBytes(Users[ViewModelSend.Id].temp_src + @"\" + SendFileInfo.Name, SendFileInfo.Data);
+                                File.WriteAllBytes(Users[ViewModelSend.Id].Temp_src + @"\" + SendFileInfo.Name, SendFileInfo.Data);
                                 viewModelMessage = new ViewModelMessage("message", "Файл загружен");
                             }
                             else

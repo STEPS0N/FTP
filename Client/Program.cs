@@ -138,9 +138,10 @@ namespace Client
                         ViewModelMessage viewModelMessage = JsonConvert.DeserializeObject<ViewModelMessage>(messageServer);
 
 
-                        if (viewModelMessage.Command == "authorization")
+                        if (viewModelMessage.Command == "autorisation")
                         {
                             Id = Int32.Parse(viewModelMessage.Data);
+                            Console.WriteLine($"Id авторизованного пользователя {Id}");
                         }
                         else if (viewModelMessage.Command == "message")
                         {
