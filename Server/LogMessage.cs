@@ -9,11 +9,13 @@ namespace Server
     public class LogMessage
     {
         public int Id { get; set; }
+        public int IdUser { get; set; }
         public string Message { get; set; }
         public DateTime ExecutedAt { get; set; }
 
-        public LogMessage(string message, DateTime executedAt)
+        public LogMessage(int idUser, string message, DateTime executedAt)
         {
+            IdUser = idUser;
             Message = message;
             ExecutedAt = executedAt;
             // /cd User: login - asdas; id - 0;

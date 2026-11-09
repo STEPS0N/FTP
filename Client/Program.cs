@@ -14,7 +14,7 @@ namespace Client
 
         static void Main(string[] args)
         {
-            Console.Write("Введите IP адрес сервера:");
+            Console.Write("Введите IP адрес сервера: ");
             string sIpADress = Console.ReadLine();
             Console.Write("Введите порт: ");
             string sPort = Console.ReadLine();
@@ -52,6 +52,10 @@ namespace Client
                     }
                 }
                 else if (Command == "cd")
+                {
+                    BCommand = true;
+                }
+                else if (Command == "history")
                 {
                     BCommand = true;
                 }
@@ -155,6 +159,12 @@ namespace Client
                             {
                                 Console.WriteLine(Name);
                             }
+                        }
+                        else if (viewModelMessage.Command == "history")
+                        {
+                            List<string> logs = JsonConvert.DeserializeObject<List<string>>(viewModelMessage.Data);
+                            foreach (string line in logs)
+                                Console.WriteLine(line);
                         }
                         else if (viewModelMessage.Command == "file")
                         {
